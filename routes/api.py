@@ -626,3 +626,23 @@ def delete_contact(contact_id):
     db.session.delete(contact)
     db.session.commit()
     return jsonify({'message': 'Contact deleted'}) 
+
+@api_bp.route('/experience', methods=['POST'])
+@admin_required
+def create_experience():
+    from models import Experience, db
+    data = request.json
+    exp = Experience(
+        title=data.get('title'),
+        company=data.get('company'),
+        description=data.get('description'),
+        start_date=parse_date(data.get('start_date')),
+        end_date=parse_date(data.get('end_date')),
+        current=parse_bool(data.get('current', False)),
+        location=data.get('location'),
+        order=data.get('order', 0),
+        is_active=parse_bool(data.get('is_active', True))
+    )
+    db.session.add(exp)
+    db.session.commit()
+    return jsonify({'message': 'Experience created', 'id': exp.id}), 201 

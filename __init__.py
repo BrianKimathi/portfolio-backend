@@ -10,8 +10,11 @@ db = SQLAlchemy()
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
-    # Allow CORS for frontend
-    CORS(app, origins=["http://localhost:5173"], supports_credentials=True)
+    # Allow CORS for frontend (local and deployed admin)
+    CORS(app, origins=[
+        "http://localhost:5173",
+        "https://portfolio-admin-smoky-one.vercel.app"
+    ], supports_credentials=True)
     db.init_app(app)
 
     # Import all models before creating tables

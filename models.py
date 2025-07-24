@@ -93,3 +93,13 @@ class Certification(db.Model):
     order = db.Column(db.Integer, default=0)
     is_active = db.Column(db.Boolean, default=True)
     certificate_url = db.Column(db.String(500)) 
+
+class Reference(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    experience_id = db.Column(db.Integer, db.ForeignKey('experience.id'), nullable=False)
+    name = db.Column(db.String(100), nullable=False)
+    email = db.Column(db.String(120))
+    phone = db.Column(db.String(30))
+    note = db.Column(db.Text)
+
+Experience.references = db.relationship('Reference', backref='experience', cascade='all, delete-orphan') 

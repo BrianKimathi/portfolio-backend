@@ -438,67 +438,83 @@ def delete_skill(skill_id):
 # --- Experience CRUD ---
 @api_bp.route('/experience', methods=['GET'])
 def get_experience():
-    from models import Experience
+    from models import Experience, Reference
     exp = Experience.query.order_by(Experience.order).all()
-    return jsonify([{
-        'id': e.id,
-        'title': e.title,
-        'company': e.company,
-        'description': e.description,
-        'start_date': e.start_date.isoformat() if e.start_date else None,
-        'end_date': e.end_date.isoformat() if e.end_date else None,
-        'current': e.current,
-        'location': e.location,
-        'order': e.order,
-        'is_active': e.is_active
-    } for e in exp])
+    return jsonify([
+        {
+            'id': e.id,
+            'title': e.title,
+            'company': e.company,
+            'description': e.description,
+            'start_date': e.start_date.isoformat() if e.start_date else None,
+            'end_date': e.end_date.isoformat() if e.end_date else None,
+            'current': e.current,
+            'location': e.location,
+            'order': e.order,
+            'is_active': e.is_active,
+            'references': [
+                {
+                    'id': r.id,
+                    'name': r.name,
+                    'email': r.email,
+                    'phone': r.phone,
+                    'note': r.note
+                } for r in e.references
+            ]
+        } for e in exp
+    ])
 
-@api_bp.route('/experience', methods=['POST'])
+@api_bp.route('/experience/<int:exp_id>/references', methods=['GET'])
+def get_references(exp_id):
+    from models import Reference
+    refs = Reference.query.filter_by(experience_id=exp_id).all()
+    return jsonify([
+        {
+            'id': r.id,
+            'name': r.name,
+            'email': r.email,
+            'phone': r.phone,
+            'note': r.note
+        } for r in refs
+    ])
+
+@api_bp.route('/experience/<int:exp_id>/references', methods=['POST'])
 @admin_required
-def create_experience():
-    from models import Experience
+def create_reference(exp_id):
+    from models import Reference, db
     data = request.json
-    exp = Experience(
-        title=data.get('title'),
-        company=data.get('company'),
-        description=data.get('description'),
-        start_date=parse_date(data.get('start_date')),
-        end_date=parse_date(data.get('end_date')),
-        current=parse_bool(data.get('current', False)),
-        location=data.get('location'),
-        order=data.get('order', 0),
-        is_active=parse_bool(data.get('is_active', True))
-    )
-    db.session.add(exp)
+    name = data.get('name')
+    email = data.get('email')
+    phone = data.get('phone')
+    note = data.get('note')
+    if not name:
+        return jsonify({'error': 'Name is required.'}), 400
+    ref = Reference(experience_id=exp_id, name=name, email=email, phone=phone, note=note)
+    db.session.add(ref)
     db.session.commit()
-    return jsonify({'message': 'Experience created', 'id': exp.id}), 201
+    return jsonify({'message': 'Reference added.', 'id': ref.id}), 201
 
-@api_bp.route('/experience/<int:exp_id>', methods=['PUT'])
+@api_bp.route('/references/<int:ref_id>', methods=['PUT'])
 @admin_required
-def update_experience(exp_id):
-    from models import Experience
-    exp = Experience.query.get_or_404(exp_id)
+def update_reference(ref_id):
+    from models import Reference, db
+    ref = Reference.query.get_or_404(ref_id)
     data = request.json
-    exp.title = data.get('title', exp.title)
-    exp.company = data.get('company', exp.company)
-    exp.description = data.get('description', exp.description)
-    exp.start_date = parse_date(data.get('start_date', exp.start_date))
-    exp.end_date = parse_date(data.get('end_date', exp.end_date))
-    exp.current = parse_bool(data.get('current', exp.current))
-    exp.location = data.get('location', exp.location)
-    exp.order = data.get('order', exp.order)
-    exp.is_active = parse_bool(data.get('is_active', exp.is_active))
+    ref.name = data.get('name', ref.name)
+    ref.email = data.get('email', ref.email)
+    ref.phone = data.get('phone', ref.phone)
+    ref.note = data.get('note', ref.note)
     db.session.commit()
-    return jsonify({'message': 'Experience updated'})
+    return jsonify({'message': 'Reference updated.'})
 
-@api_bp.route('/experience/<int:exp_id>', methods=['DELETE'])
+@api_bp.route('/references/<int:ref_id>', methods=['DELETE'])
 @admin_required
-def delete_experience(exp_id):
-    from models import Experience
-    exp = Experience.query.get_or_404(exp_id)
-    db.session.delete(exp)
+def delete_reference(ref_id):
+    from models import Reference, db
+    ref = Reference.query.get_or_404(ref_id)
+    db.session.delete(ref)
     db.session.commit()
-    return jsonify({'message': 'Experience deleted'})
+    return jsonify({'message': 'Reference deleted.'})
 
 # --- Education CRUD ---
 @api_bp.route('/education', methods=['GET'])
@@ -578,6 +594,20 @@ def get_contacts():
         'created_at': c.created_at.isoformat() if c.created_at else None,
         'read': c.read
     } for c in contacts])
+
+@api_bp.route('/contacts', methods=['POST'])
+def create_contact():
+    from models import Contact, db
+    data = request.json
+    name = data.get('name')
+    email = data.get('email')
+    message = data.get('message')
+    if not name or not email or not message:
+        return jsonify({'error': 'All fields are required.'}), 400
+    contact = Contact(name=name, email=email, message=message)
+    db.session.add(contact)
+    db.session.commit()
+    return jsonify({'message': 'Contact message received.'}), 201
 
 @api_bp.route('/contacts/<int:contact_id>', methods=['PUT'])
 @admin_required

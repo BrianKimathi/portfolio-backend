@@ -15,6 +15,7 @@ def create_app():
         "http://localhost:5173",
         "https://portfolio-admin-smoky-one.vercel.app",
         "http://localhost:5174"
+        "https://brian-kimathi.vercel.app"
     ], supports_credentials=True)
     db.init_app(app)
 

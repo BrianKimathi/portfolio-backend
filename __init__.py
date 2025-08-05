@@ -14,7 +14,8 @@ def create_app():
     CORS(app, origins=[
         "http://localhost:5173",
         "https://portfolio-admin-smoky-one.vercel.app",
-        "https://portfolio-two-kohl-40.vercel.app"
+        "https://portfolio-two-kohl-40.vercel.app",
+        "https://brian-kimathi-portfolio.vercel.app",  # Add this
         "https://brian-kimathi.vercel.app"
     ], supports_credentials=True)
     db.init_app(app)

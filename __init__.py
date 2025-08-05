@@ -13,7 +13,7 @@ def create_app():
     # Allow CORS for frontend (local and deployed admin)
     CORS(app, origins=[
         "http://localhost:5173",
-        "https://portfolio-admin-smoky-one.vercel.app",
+        "https://admin-self-xi.vercel.app",
         "https://portfolio-two-kohl-40.vercel.app",
         "https://brian-kimathi-portfolio.vercel.app",  # Add this
         "https://brian-kimathi.vercel.app"
